@@ -33,7 +33,8 @@ def get_pass_summary(df: pd.DataFrame) -> dict:
 
     all_students = df["No"].nunique()
     passed_students = passed["No"].nunique()
-    pass_rate = round(passed_students / all_students * 100, 1) if all_students > 0 else 0
+    total_exams = len(df)
+    pass_rate = round(passed_students / total_exams * 100, 1) if total_exams > 0 else 0
 
     return {
         "total_students": all_students,
