@@ -33,19 +33,17 @@ uv sync
 `.env` ファイルをプロジェクトルートに作成し、Excelファイルのパスを設定します。
 
 ```
-EXCEL_2026=C:\path\to\合格実績_2026.xlsx
-# EXCEL_2025=C:\path\to\合格実績_2025.xlsx  # 経年比較用（任意）
+EXCEL_2026=C:\path\to\results_2026.xlsx
+# EXCEL_2025=C:\path\to\results_2025.xlsx  # 経年比較用（任意）
 ```
+
+> **注意**: パス・ファイル名は ASCII のみを使用してください。日本語を含むパスはファイルが正常に読み込まれない場合があります。
 
 > `.env` を設定しなくても、ブラウザからExcelファイルをドラッグ＆ドロップして読み込めます。
 
 ## 起動
 
 ```bash
-# Windows（スタートアップスクリプト）
-start.bat
-
-# または直接起動
 uv run uvicorn src.goukaku_analytics.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 

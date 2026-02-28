@@ -1,5 +1,5 @@
 from pathlib import Path
-from fastapi import FastAPI, Request, HTTPException, UploadFile, File
+from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 import json
@@ -26,7 +26,7 @@ _UPLOAD_DIR = Path(tempfile.gettempdir()) / "goukaku_analytics"
 _current_upload: dict = {"path": None, "filename": None}
 
 
-def _get_current_excel() -> tuple[Path, int]:
+def _get_current_excel() -> tuple[Path, int] | tuple[None, None]:
     if _current_upload["path"] and Path(str(_current_upload["path"])).exists():
         path = Path(str(_current_upload["path"]))
         m = re.search(r"20\d{2}", _current_upload["filename"] or "")
@@ -34,9 +34,11 @@ def _get_current_excel() -> tuple[Path, int]:
         return path, year
     year_paths = settings.get_year_paths()
     if not year_paths:
-        raise HTTPException(status_code=503, detail=".envにExcelファイルパスが設定されていないか、ファイルが見つかりません。")
+        return None, None
     latest_year = max(year_paths.keys())
     return year_paths[latest_year], latest_year
+
+
 
 
 def _default_year() -> int:
@@ -80,6 +82,11 @@ async def upload_excel(file: UploadFile = File(...)):
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     path, year = _get_current_excel()
+    if path is None:
+        return templates.TemplateResponse(
+            "dashboard.html",
+            {"request": request, "no_data": True, "active": "dashboard"},
+        )
     df = load_data(path)
     update_date = get_update_date(path)
     summary = get_pass_summary(df)
@@ -100,6 +107,8 @@ async def dashboard(request: Request):
 @app.get("/summary", response_class=HTMLResponse)
 async def summary_page(request: Request):
     path, year = _get_current_excel()
+    if path is None:
+        return RedirectResponse("/", status_code=302)
     df = load_data(path)
     summary = get_pass_summary(df)
     ranking = get_university_ranking(df)
@@ -121,6 +130,8 @@ async def summary_page(request: Request):
 @app.get("/scores", response_class=HTMLResponse)
 async def scores_page(request: Request):
     path, year = _get_current_excel()
+    if path is None:
+        return RedirectResponse("/", status_code=302)
     df = load_data(path)
     scores = get_score_summary(df)
 
@@ -140,7 +151,7 @@ async def scores_page(request: Request):
 async def trends_page(request: Request):
     year_paths = settings.get_year_paths()
     if not year_paths:
-        raise HTTPException(status_code=503, detail="データなし")
+        return RedirectResponse("/", status_code=302)
 
     year_dfs = load_all_years(year_paths)
     trend = get_trend_data(year_dfs)

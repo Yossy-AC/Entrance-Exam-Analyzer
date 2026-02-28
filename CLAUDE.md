@@ -17,6 +17,9 @@ uv sync
 uv run uvicorn src.goukaku_analytics.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
+> **Windows の bash (Git Bash) で `uv` が見つからない場合**：
+> `$USERPROFILE/.local/bin/uv run uvicorn ...` のようにフルパスで指定する。
+
 ## ディレクトリ構成
 
 ```
@@ -87,11 +90,29 @@ EXCEL_2025=...  # 追加するだけで /trends に反映される
 ## .env 設定例
 
 ```
-EXCEL_2026=F:\OneDrive\AI\合格実績_sample.xlsx
-# EXCEL_2025=F:\OneDrive\AI\合格実績_2025.xlsx
+EXCEL_2026=F:\path\to\results_2026.xlsx
+# EXCEL_2025=F:\path\to\results_2025.xlsx
 ```
 
 `.env` は `.gitignore` に含まれているためコミットされない。
+
+> **注意**: `.env` のパスに日本語を含む場合、Python の `Path.exists()` が正しく機能せずファイルが見つからない扱いになる。
+> Excelファイル名・パスは **ASCII のみ** を使うこと。
+> `.env` を設定しなくてもブラウザのアップロード機能でファイルを読み込める。
+
+## データ未設定時の挙動
+
+`.env` が未設定かつファイル未アップロードの場合：
+
+- `/` (ダッシュボード)：「データファイルが読み込まれていません」メッセージを表示
+- その他のページ（`/summary`, `/scores`, `/trends`）：`/` にリダイレクト
+
+## 既知の制約
+
+- **FastAPI 0.134.0 + Starlette 0.52.1 の HTTPException**:
+  `fastapi.HTTPException` と `starlette.HTTPException` が別クラスになったため、
+  ルート関数から HTTPException を raise してもデフォルトハンドラーが機能しない場合がある。
+  このプロジェクトでは HTTPException を使わず、ルート内で `None` チェックとリダイレクトで代替している。
 
 ## 依存関係
 
