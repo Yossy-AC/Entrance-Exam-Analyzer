@@ -4,7 +4,6 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 import json
 import re
-import shutil
 import tempfile
 
 from .config import settings
@@ -67,13 +66,14 @@ async def clear_upload():
 
 @app.post("/upload")
 async def upload_excel(file: UploadFile = File(...)):
+    from fastapi.responses import JSONResponse
     _UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     dest = _UPLOAD_DIR / (file.filename or "upload.xlsx")
-    with open(dest, "wb") as f:
-        shutil.copyfileobj(file.file, f)
+    contents = await file.read()
+    dest.write_bytes(contents)
     _current_upload["path"] = dest
     _current_upload["filename"] = file.filename
-    return RedirectResponse("/", status_code=303)
+    return JSONResponse({"ok": True})
 
 
 # ─── ページルート ────────────────────────────────────────

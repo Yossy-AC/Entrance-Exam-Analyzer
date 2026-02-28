@@ -218,15 +218,23 @@
       status.textContent = 'アップロード中...';
       status.className = 'mt-1.5 text-xs text-center text-blue-600';
       status.classList.remove('hidden');
-      try {
-        const fd = new FormData();
-        fd.append('file', file);
-        await fetch('/upload', { method: 'POST', body: fd });
-        window.location.href = '/';
-      } catch {
-        status.textContent = 'エラーが発生しました';
+      const fd = new FormData();
+      fd.append('file', file);
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/upload');
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          window.location.href = '/';
+        } else {
+          status.textContent = 'エラーが発生しました (' + xhr.status + ')';
+          status.className = 'mt-1.5 text-xs text-center text-red-500';
+        }
+      };
+      xhr.onerror = () => {
+        status.textContent = 'エラーが発生しました (network)';
         status.className = 'mt-1.5 text-xs text-center text-red-500';
-      }
+      };
+      xhr.send(fd);
     }
   })();
   </script>
