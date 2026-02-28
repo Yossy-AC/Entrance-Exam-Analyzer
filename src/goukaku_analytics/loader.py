@@ -100,7 +100,7 @@ def _find_header_row_idx(ws) -> int:
 def load_data(path: Path) -> pd.DataFrame:
     """Excelからメインデータシートを読み込みDataFrameとして返す"""
     wb = load_workbook(path, data_only=True)
-    ws = wb.worksheets[1]
+    ws = wb.worksheets[0]
 
     header_row = _find_header_row_idx(ws)
     data_start = header_row + 1
