@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run uvicorn src.goukaku_analytics.main:app --host 127.0.0.1 --port 8000 --reload)",
+      "Bash(\"$USERPROFILE/.local/bin/uv\" run uvicorn src.goukaku_analytics.main:app --host 127.0.0.1 --port 8000 --reload)",
+      "Bash(curl -s http://127.0.0.1:8000/)",
+      "Bash(curl -v http://127.0.0.1:8000/)",
+      "Bash(\"$USERPROFILE/.local/bin/uv\" run python -c \":*)",
+      "Bash(python3 -c \":*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/docs)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/summary)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/)",
+      "Bash(\"$USERPROFILE/.local/bin/uv\" run uvicorn src.goukaku_analytics.main:app --host 127.0.0.1 --port 8000 --log-level debug)",
+      "Bash(netstat -ano)",
+      "Read(//f/Dev/GitHub_Entrance-Exam-Analyzer/**)",
+      "Bash(taskkill /PID 6564 /F)",
+      "Bash(cmd /c \"taskkill /PID 6564 /F\")",
+      "Bash(powershell -Command \"Stop-Process -Id 6564 -Force -ErrorAction SilentlyContinue; Write-Host done\")",
+      "Bash(powershell -Command \":*)",
+      "Bash(powershell -Command \"Get-Process -Id 6564 -ErrorAction SilentlyContinue | Select-Object Name, Id, Path | Format-List\")",
+      "Bash(powershell -Command \"Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue; Write-Host \"\"Killed $_\"\" }\")"
+    ]
+  }
+}
