@@ -1,0 +1,16 @@
+<table class="table-base">
+  <thead>
+    <tr>
+      <th>分類</th>
+      <th class="text-right">合格者数（人）</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in summary.by_category %}
+    <tr>
+      <td>{{ row.分類 }}</td>
+      <td class="text-right font-semibold">{{ row.合格者数 }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

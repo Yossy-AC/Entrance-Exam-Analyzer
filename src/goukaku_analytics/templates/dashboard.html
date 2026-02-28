@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}ダッシュボード - {{ year }}年度{% endblock %}
+{% block page_title %}ダッシュボード{% endblock %}
+
+{% block content %}
+
+<!-- Stat cards -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+
+  <div class="stat-card">
+    <p class="text-xs font-medium text-gray-500 mb-3">在籍生徒数</p>
+    <p class="text-3xl font-bold text-gray-900 leading-none">{{ summary.total_students }}</p>
+    <p class="text-xs text-gray-400 mt-2">人</p>
+  </div>
+
+  <div class="stat-card">
+    <p class="text-xs font-medium text-gray-500 mb-3">合格者数（延べ）</p>
+    <p class="text-3xl font-bold text-emerald-600 leading-none">{{ summary.passed_students }}</p>
+    <p class="text-xs text-gray-400 mt-2">人</p>
+  </div>
+
+  <div class="stat-card">
+    <p class="text-xs font-medium text-gray-500 mb-3">合格率</p>
+    <p class="text-3xl font-bold text-blue-600 leading-none">{{ summary.pass_rate }}<span class="text-lg font-semibold">%</span></p>
+    <p class="text-xs text-gray-400 mt-2">合格者 / 全生徒</p>
+  </div>
+
+  <div class="stat-card">
+    <p class="text-xs font-medium text-gray-500 mb-3">データ更新日</p>
+    <p class="text-2xl font-bold text-gray-800 leading-none">{{ update_date }}</p>
+    <p class="text-xs text-gray-400 mt-2">最終入力日</p>
+  </div>
+
+</div>
+
+<!-- Charts row -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+
+  <div class="card">
+    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">分類別 合格者数</p>
+    <canvas id="categoryChart" height="210"></canvas>
+  </div>
+
+  <div class="card">
+    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">国公私別 合格者数</p>
+    <canvas id="kokushiChart" height="210"></canvas>
+  </div>
+
+</div>
+
+<!-- Category table -->
+<div class="card">
+  <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">分類別 集計一覧</p>
+  <table class="table-base">
+    <thead>
+      <tr>
+        <th>分類</th>
+        <th class="text-right">合格者数（人）</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in summary.by_category %}
+      <tr>
+        <td class="font-medium">{{ row.分類 }}</td>
+        <td class="text-right font-bold text-gray-900">{{ row.合格者数 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+const categoryData = {{ summary.by_category | tojson }};
+const kokushiData  = {{ summary.by_kokushi  | tojson }};
+
+const PALETTE = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6'];
+const PALETTE_A = PALETTE.map(c => c + 'bf');
+
+new Chart(document.getElementById('categoryChart'), {
+  type: 'bar',
+  data: {
+    labels: categoryData.map(d => d['分類']),
+    datasets: [{
+      label: '合格者数',
+      data: categoryData.map(d => d['合格者数']),
+      backgroundColor: PALETTE_A,
+      borderColor: PALETTE,
+      borderWidth: 1,
+      borderRadius: 5,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+new Chart(document.getElementById('kokushiChart'), {
+  type: 'doughnut',
+  data: {
+    labels: kokushiData.map(d => d['区分']),
+    datasets: [{
+      data: kokushiData.map(d => d['合格者数']),
+      backgroundColor: PALETTE_A,
+      borderColor: '#fff',
+      borderWidth: 3,
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    cutout: '62%',
+    plugins: {
+      legend: { position: 'right', labels: { padding: 16, font: { size: 12 } } }
+    }
+  }
+});
+</script>
+{% endblock %}
