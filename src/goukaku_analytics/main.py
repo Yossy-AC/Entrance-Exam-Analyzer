@@ -8,7 +8,7 @@ import tempfile
 
 from .config import settings
 from .loader import load_data, get_update_date, load_all_years
-from .analysis.summary import get_pass_summary, get_university_ranking, get_method_summary
+from .analysis.summary import get_pass_summary, get_university_ranking, get_method_summary, get_method_by_kokushi, get_exam_result_summary
 from .analysis.scores import get_score_summary
 from .analysis.trends import get_trend_data
 
@@ -61,6 +61,15 @@ templates.env.globals["current_filename"] = _current_filename
 async def clear_upload():
     _current_upload["path"] = None
     _current_upload["filename"] = None
+
+    # プロジェクトルートの自動検出ファイルを削除
+    project_root = Path(__file__).parent.parent.parent
+    for xlsx in list(project_root.glob("EntranceExam_Results_*.xlsx")):
+        try:
+            xlsx.unlink()
+        except Exception:
+            pass
+
     return RedirectResponse("/", status_code=303)
 
 
@@ -88,8 +97,10 @@ async def dashboard(request: Request):
             {"request": request, "no_data": True, "active": "dashboard"},
         )
     df = load_data(path)
-    update_date = get_update_date(path)
+    update_date = get_update_date(df)
     summary = get_pass_summary(df)
+    method_by_kokushi = get_method_by_kokushi(df)
+    exam_result = get_exam_result_summary(df)
 
     return templates.TemplateResponse(
         "dashboard.html",
@@ -99,6 +110,8 @@ async def dashboard(request: Request):
             "update_date": update_date,
             "excel_path": str(path),
             "summary": summary,
+            "method_by_kokushi": method_by_kokushi,
+            "exam_result": exam_result,
             "active": "dashboard",
         },
     )
@@ -173,6 +186,8 @@ async def trends_page(request: Request):
 @app.get("/partials/summary-table", response_class=HTMLResponse)
 async def partial_summary_table(request: Request):
     path, year = _get_current_excel()
+    if path is None:
+        return HTMLResponse("")
     df = load_data(path)
     summary = get_pass_summary(df)
     return templates.TemplateResponse(
@@ -184,6 +199,8 @@ async def partial_summary_table(request: Request):
 @app.get("/partials/ranking", response_class=HTMLResponse)
 async def partial_ranking(request: Request):
     path, year = _get_current_excel()
+    if path is None:
+        return HTMLResponse("")
     df = load_data(path)
     ranking = get_university_ranking(df)
     return templates.TemplateResponse(

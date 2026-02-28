@@ -151,21 +151,23 @@ def load_data(path: Path) -> pd.DataFrame:
     return df
 
 
-def get_update_date(path: Path) -> str:
-    """Excelから更新日を取得"""
+def get_update_date(df: pd.DataFrame) -> str:
+    """データの更新日列（COL_MAP 14列目）の最新値を返す"""
+    from datetime import timedelta
+    EXCEL_EPOCH = datetime(1899, 12, 30)
     try:
-        wb = load_workbook(path, data_only=True)
-        ws = wb.worksheets[1]
-        for row in ws.iter_rows(max_row=5, values_only=True):
-            for i, val in enumerate(row):
-                if val == "更新日" and i + 1 < len(row):
-                    date_val = row[i + 1]
-                    if isinstance(date_val, datetime):
-                        return date_val.strftime("%Y-%m-%d")
-                    return str(date_val)
+        col = df["更新日"].dropna()
+        if len(col) == 0:
+            return "不明"
+        latest = col.max()
+        if isinstance(latest, datetime):
+            return latest.strftime("%Y-%m-%d")
+        if isinstance(latest, (int, float)):
+            # Excel シリアル値 → 日付変換（1899-12-30 起点）
+            return (EXCEL_EPOCH + timedelta(days=int(latest))).strftime("%Y-%m-%d")
+        return str(latest)
     except Exception:
-        pass
-    return "不明"
+        return "不明"
 
 
 def load_all_years(year_paths: dict[int, Path]) -> dict[int, pd.DataFrame]:

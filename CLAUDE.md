@@ -77,8 +77,9 @@ _current_upload: dict = {"path": None, "filename": None}
 - `POST /upload`：ファイルを `%TEMP%/goukaku_analytics/` に保存し `{"ok": true}` を返す（200 JSON）
   - クライアント側（XMLHttpRequest）が 200 を受け取ってから `window.location.href = '/'` でリダイレクト
   - ※旧実装は 303 リダイレクトを返していたが、`fetch` / `XMLHttpRequest` との組み合わせで `net::ERR_FAILED` が発生するため変更
-- `POST /upload/clear`：`_current_upload` をリセットし `/` にリダイレクト
+- `POST /upload/clear`：`_current_upload` をリセット、プロジェクトルートの `EntranceExam_Results_*.xlsx` を削除し `/` にリダイレクト
 - Jinja2 グローバル関数 `current_filename()` でサイドバーに現在のファイル名を表示
+- サイドバーには削除ボタン付きで現在のファイル名を表示、下部にアップロードエリア（ドラッグ&ドロップ or クリック）を配置
 
 ### Jinja2 カスタム設定
 
@@ -87,6 +88,18 @@ templates.env.globals["enumerate"] = enumerate
 templates.env.globals["current_filename"] = _current_filename
 templates.env.filters["tojson"] = lambda v: json.dumps(v, ensure_ascii=False)
 ```
+
+### ダッシュボード構成
+
+**上部（統計カード）**：在籍人数、総受験数、合格率、データ更新日
+
+**中段（グラフ）**：
+- 国公立大 受験方式別合格者数（棒グラフ）
+- 私立大 受験方式別合格者数（棒グラフ）
+
+**下部（テーブル）**：
+- 左：分類別集計一覧（国立/公立/私立等の合格者数）
+- 右：受験結果（出願・合格・不合格・合計の件数）
 
 ### 経年比較の設定
 
@@ -133,6 +146,14 @@ EXCEL_2026=F:\path\to\results_2026.xlsx
   - `fetch` API・`XMLHttpRequest` どちらでも同様に失敗
   - 試した変更: `shutil.copyfileobj` → `await file.read()` + `dest.write_bytes()`、303 → 200 JSON レスポンス
   - 調査継続中。`.env` でファイルパスを直接指定する方法は正常動作する
+
+- **pandas numpy 型の JSON シリアライズエラー**:
+  pandas の `.sum()` が返す `numpy.int64` 型は、Jinja2 テンプレート内の `tojson` フィルターでシリアライズ失敗し `Internal Server Error` が発生する。
+  **対策**: 集計関数の戻り値は明示的に `int()` や `float()` で Python ネイティブ型に変換する。
+  ```python
+  # 修正例
+  passed = int((df["合格"] == 1).sum())  # numpy.int64 → int
+  ```
 
 ## Excelファイル命名規則
 

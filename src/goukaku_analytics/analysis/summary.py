@@ -83,3 +83,45 @@ def get_method_summary(df: pd.DataFrame) -> list[dict]:
         .sort_values(["方式名", "合否"])
     )
     return result.to_dict(orient="records")
+
+
+def get_method_by_kokushi(df: pd.DataFrame) -> dict:
+    """国公立・私立別に、受験方式別の合格者数を集計"""
+    if "方式" not in df.columns:
+        return {"国公立": [], "私立等": []}
+
+    df = df.copy()
+    df["方式コード"] = pd.to_numeric(df["方式"], errors="coerce")
+    df["方式名"] = df["方式コード"].map(METHOD_LABELS).fillna(df["方式"].astype(str))
+
+    # 合格者のみ
+    passed = df[df["合格"] == 1]
+
+    result = {}
+    for kokushi in ["国公立", "私立等"]:
+        sub = passed[passed["国公私"] == kokushi]
+        agg = (
+            sub.groupby("方式名")["No"]
+            .nunique()
+            .reset_index()
+            .rename(columns={"No": "合格者数"})
+            .sort_values("合格者数", ascending=False)
+        )
+        result[kokushi] = agg.to_dict(orient="records")
+
+    return result
+
+
+def get_exam_result_summary(df: pd.DataFrame) -> dict:
+    """合格/不合格の結果集計（出願件数ベース）"""
+    passed = int((df["合格"] == 1).sum())
+    failed = int((df["合格"] == 2).sum())
+    applied = int((df["合格"] == 0).sum())
+    total = int(len(df))
+
+    return {
+        "total": total,
+        "applied": applied,
+        "passed": passed,
+        "failed": failed,
+    }

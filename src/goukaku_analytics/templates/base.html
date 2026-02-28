@@ -122,38 +122,41 @@
 
     <!-- File upload section -->
     <div class="px-3 pb-4 border-t border-gray-200 pt-3">
-      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">データファイル</p>
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">データファイル</p>
 
+      {% set fname = current_filename() %}
+      {% if fname %}
+      <!-- Current file display -->
+      <div class="mb-3 px-3 py-2.5 bg-green-50 rounded-lg border border-green-200">
+        <div class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+          </svg>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs text-green-700 font-medium">読み込み中</p>
+            <p class="text-xs text-green-800 truncate font-semibold" title="{{ fname }}">{{ fname }}</p>
+          </div>
+        </div>
+        <!-- Delete button -->
+        <button onclick="confirmDelete()" class="w-full mt-2 px-2.5 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 rounded-md hover:bg-red-50 transition-colors">
+          ✕ ファイルを削除
+        </button>
+      </div>
+      {% endif %}
+
+      <!-- Upload zone -->
       <div class="drop-zone" id="drop-zone">
-        <svg class="w-6 h-6 mx-auto mb-1.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <svg class="w-6 h-6 mx-auto mb-1.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
         </svg>
-        <p class="text-xs text-gray-400 leading-snug">Excelをドロップ</p>
-        <label class="cursor-pointer mt-1 block">
-          <span class="text-xs text-blue-600 hover:text-blue-800">またはクリックして選択</span>
+        <p class="text-xs font-medium text-gray-700">Excelをドロップ</p>
+        <label class="cursor-pointer mt-1.5 block">
+          <span class="text-xs text-blue-600 hover:text-blue-800 font-medium">クリックして選択</span>
           <input type="file" accept=".xlsx,.xls" class="hidden" id="file-input">
         </label>
       </div>
 
-      {% set fname = current_filename() %}
-      {% if fname %}
-      <div class="mt-2 flex items-center gap-1 px-2 py-1.5 bg-green-50 rounded-md border border-green-200">
-        <svg class="w-3 h-3 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-        </svg>
-        <span class="text-xs text-green-800 truncate font-medium flex-1 min-w-0" title="{{ fname }}">{{ fname }}</span>
-        <form method="post" action="/upload/clear" class="flex-shrink-0">
-          <button type="submit" title="ファイルをクリア"
-            class="w-4 h-4 rounded flex items-center justify-center text-gray-400 hover:bg-red-100 hover:text-red-500 transition-colors">
-            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </form>
-      </div>
-      {% endif %}
-
-      <div id="upload-status" class="mt-1.5 text-xs text-center hidden"></div>
+      <div id="upload-status" class="mt-2 text-xs text-center hidden"></div>
     </div>
   </aside>
 
@@ -194,6 +197,18 @@
   </div>
 
   <script>
+  // Delete confirmation dialog
+  function confirmDelete() {
+    const msg = '現在のファイルを削除し、'.concat(String.fromCharCode(10), 'デフォルト設定に戻しますか？');
+    if (confirm(msg)) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/upload/clear';
+      document.body.appendChild(form);
+      form.submit();
+    }
+  }
+
   (function () {
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
@@ -210,13 +225,14 @@
       const f = e.dataTransfer.files[0];
       if (f) uploadFile(f);
     });
+    dropZone.addEventListener('click', () => { fileInput.click(); });
     fileInput.addEventListener('change', () => {
       if (fileInput.files[0]) uploadFile(fileInput.files[0]);
     });
 
-    async function uploadFile(file) {
+    function uploadFile(file) {
       status.textContent = 'アップロード中...';
-      status.className = 'mt-1.5 text-xs text-center text-blue-600';
+      status.className = 'mt-2 text-xs text-center text-blue-600 font-medium';
       status.classList.remove('hidden');
       const fd = new FormData();
       fd.append('file', file);
@@ -224,15 +240,16 @@
       xhr.open('POST', '/upload');
       xhr.onload = () => {
         if (xhr.status === 200) {
-          window.location.href = '/';
+          status.textContent = 'アップロード完了。ページを読み込み中...';
+          setTimeout(() => { window.location.href = '/'; }, 800);
         } else {
           status.textContent = 'エラーが発生しました (' + xhr.status + ')';
-          status.className = 'mt-1.5 text-xs text-center text-red-500';
+          status.className = 'mt-2 text-xs text-center text-red-600 font-medium';
         }
       };
       xhr.onerror = () => {
         status.textContent = 'エラーが発生しました (network)';
-        status.className = 'mt-1.5 text-xs text-center text-red-500';
+        status.className = 'mt-2 text-xs text-center text-red-600 font-medium';
       };
       xhr.send(fd);
     }
