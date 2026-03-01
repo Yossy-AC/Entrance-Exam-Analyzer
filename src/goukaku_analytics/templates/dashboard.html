@@ -5,13 +5,23 @@
 {% block content %}
 {% if no_data %}
 <div class="flex flex-col items-center justify-center h-64 text-center">
+  {% if upload_error is defined and upload_error %}
+  <svg class="w-16 h-16 text-red-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+  </svg>
+  <p class="text-red-600 text-sm font-medium mb-1">{{ upload_error }}</p>
+  <p class="text-gray-400 text-xs">左サイドバーから正しいExcelファイルをアップロードしてください</p>
+  {% else %}
   <svg class="w-16 h-16 text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
     <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
   </svg>
   <p class="text-gray-500 text-sm font-medium mb-1">データファイルが読み込まれていません</p>
   <p class="text-gray-400 text-xs">左サイドバーからExcelファイルをアップロードしてください</p>
+  {% endif %}
 </div>
 {% else %}
+
+{% include "partials/filter_bar.html" %}
 
 <!-- Stat cards -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
@@ -31,7 +41,7 @@
   <div class="stat-card">
     <p class="text-xs font-medium text-gray-500 mb-3">合格率</p>
     <p class="text-3xl font-bold text-blue-600 leading-none">{{ summary.pass_rate }}<span class="text-lg font-semibold">%</span></p>
-    <p class="text-xs text-gray-400 mt-2">合格者 / 全生徒</p>
+    <p class="text-xs text-gray-400 mt-2">合格件数 / 総受験数</p>
   </div>
 
   <div class="stat-card">
@@ -67,14 +77,14 @@
       <thead>
         <tr>
           <th>分類</th>
-          <th class="text-right">合格者数（人）</th>
+          <th class="text-right">合格数/受験数</th>
         </tr>
       </thead>
       <tbody>
         {% for row in summary.by_category %}
         <tr>
           <td class="font-medium">{{ row.分類 }}</td>
-          <td class="text-right font-bold text-gray-900">{{ row.合格者数 }}</td>
+          <td class="text-right font-bold text-gray-900">{{ row.合格者数 }} / {% if row.受験数 %}{{ row.受験数 }}{% else %}?{% endif %}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -107,7 +117,7 @@
 </div>
 
 <script>
-const methodByKokushi = {{ method_by_kokushi | tojson }};
+const methodByKokushi = {{ method_by_kokushi | tojson | safe }};
 const PALETTE = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6'];
 const PALETTE_A = PALETTE.map(c => c + 'bf');
 

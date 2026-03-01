@@ -1,5 +1,7 @@
 import pandas as pd
 
+from .utils import native_records
+
 SUBJECT_MAP = {
     "英R": "英語R",
     "英L": "英語L",
@@ -29,11 +31,16 @@ def _get_subject_cols(df: pd.DataFrame) -> dict[str, str]:
     return {col: label for col, label in SUBJECT_MAP.items() if col in df.columns}
 
 
+def _safe_mean(series: pd.Series) -> float:
+    """空の Series でも NaN を返さず 0 を返す"""
+    return round(float(series.mean()), 1) if len(series) > 0 else 0.0
+
+
 def get_score_summary(df: pd.DataFrame) -> dict:
     """共通テスト得点の集計"""
     subject_cols = _get_subject_cols(df)
 
-    # 合計得点（共通テスト受験者のみ）
+    # 共通テスト受験者のみ
     score_df = df[df["合計得点"] > 0].copy()
 
     # 文理別の平均合計点
@@ -45,19 +52,18 @@ def get_score_summary(df: pd.DataFrame) -> dict:
     )
     bunri_avg["平均点"] = bunri_avg["平均点"].round(1)
 
-    # 科目別平均点（文理・合否別）
+    # 科目別平均点
     subject_avgs = []
     for col, label in subject_cols.items():
         numeric_col = pd.to_numeric(df[col], errors="coerce")
-        # 0点は未受験とみなし除外
         valid = df[numeric_col > 0].copy()
         valid_col = pd.to_numeric(valid[col], errors="coerce")
         if len(valid_col) > 0:
             subject_avgs.append({
                 "科目": label,
                 "全体平均": round(float(valid_col.mean()), 1),
-                "文系平均": round(float(pd.to_numeric(valid[valid["文理"] == "文系"][col], errors="coerce").mean()), 1) if len(valid[valid["文理"] == "文系"]) > 0 else 0,
-                "理系平均": round(float(pd.to_numeric(valid[valid["文理"] == "理系"][col], errors="coerce").mean()), 1) if len(valid[valid["文理"] == "理系"]) > 0 else 0,
+                "文系平均": _safe_mean(pd.to_numeric(valid[valid["文理"] == "文系"][col], errors="coerce")),
+                "理系平均": _safe_mean(pd.to_numeric(valid[valid["文理"] == "理系"][col], errors="coerce")),
             })
 
     # 得点分布（ヒストグラム用）
@@ -78,11 +84,11 @@ def get_score_summary(df: pd.DataFrame) -> dict:
                 "平均点": round(float(sub.mean()), 1),
                 "最大": int(sub.max()),
                 "最小": int(sub.min()),
-                "人数": len(sub),
+                "人数": int(len(sub)),
             })
 
     return {
-        "bunri_avg": bunri_avg.to_dict(orient="records"),
+        "bunri_avg": native_records(bunri_avg.to_dict(orient="records")),
         "subject_avgs": subject_avgs,
         "hist_data": hist_data,
         "pass_vs_fail": pass_vs_fail,

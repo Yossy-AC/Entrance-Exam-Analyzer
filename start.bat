@@ -2,56 +2,55 @@
 setlocal EnableExtensions EnableDelayedExpansion
 
 set "HOST=127.0.0.1"
-set "PORT=8000"
+set "BASE_PORT=8000"
+set "MAX_PORT=8010"
 set "APP=src.goukaku_analytics.main:app"
 set "PROJECT_DIR=%~dp0"
 set "PATH=%USERPROFILE%\.local\bin;%PATH%"
+set "RELOAD_FLAG="
+set "RUN_PORT="
+
+if /I "%~1"=="--reload" set "RELOAD_FLAG=--reload"
 
 cd /d "%PROJECT_DIR%"
 
-set "PORT_PID="
-for /f "usebackq delims=" %%P in (`powershell -NoProfile -Command "Get-NetTCPConnection -LocalAddress '%HOST%' -LocalPort %PORT% -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty OwningProcess"`) do (
-  set "PORT_PID=%%P"
+echo [INFO] Cleaning old app processes...
+powershell -NoProfile -Command ^
+  "$hostIp = '%HOST%'; $start = %BASE_PORT%; $last = %MAX_PORT%; " ^
+  "$appProcs = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -and $_.CommandLine -match 'src\.goukaku_analytics\.main:app' -and $_.CommandLine -match 'uvicorn' }; " ^
+  "foreach($p in $appProcs){ try { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue } catch {} }; " ^
+  "$listeners = Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalAddress -eq $hostIp -and $_.LocalPort -ge $start -and $_.LocalPort -le $last }; " ^
+  "$pids = @($listeners | Select-Object -ExpandProperty OwningProcess -Unique); " ^
+  "foreach($pid in $pids){ try { Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue } catch {}; " ^
+  "$children = Get-CimInstance Win32_Process -Filter ('ParentProcessId=' + $pid) -ErrorAction SilentlyContinue; foreach($c in $children){ try { Stop-Process -Id $c.ProcessId -Force -ErrorAction SilentlyContinue } catch {} } }"
+
+:: Wait for OS to release ports after killing processes
+echo [INFO] Waiting for port release...
+timeout /t 2 /nobreak > nul
+
+for /f "usebackq delims=" %%P in (`powershell -NoProfile -Command "$start=%BASE_PORT%; $last=%MAX_PORT%; for($p=$start; $p -le $last; $p++){ if(-not (Get-NetTCPConnection -LocalAddress '%HOST%' -LocalPort $p -State Listen -ErrorAction SilentlyContinue)){ $p; exit 0 } }; exit 1"`) do (
+  set "RUN_PORT=%%P"
 )
 
-if defined PORT_PID goto :CHECK_PORT_OWNER
-goto :START_SERVER
-
-:CHECK_PORT_OWNER
-set "CMDLINE="
-for /f "usebackq delims=" %%C in (`powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object ProcessId -eq %PORT_PID% | Select-Object -ExpandProperty CommandLine"`) do (
-  set "CMDLINE=%%C"
-)
-
-if not defined CMDLINE (
-  echo [ERROR] Port %PORT% is in use. PID=%PORT_PID%. Process details were unavailable.
-  echo [ERROR] Stop that process manually and run start.bat again.
+if not defined RUN_PORT (
+  echo [ERROR] No free port found between %BASE_PORT% and %MAX_PORT%.
+  netstat -ano | findstr ":80"
   exit /b 1
 )
 
-echo [INFO] Port %PORT% is already in use by PID %PORT_PID%.
-echo [INFO] CommandLine: !CMDLINE!
-
-echo !CMDLINE! | findstr /I /C:"uvicorn" >nul
-if errorlevel 1 (
-  echo [ERROR] The process is not uvicorn. Auto-stop is skipped.
-  exit /b 1
+if not "%RUN_PORT%"=="%BASE_PORT%" (
+  echo [WARN] Port %BASE_PORT% is busy. Using port %RUN_PORT% instead.
 )
 
-echo !CMDLINE! | findstr /I /C:"%APP%" >nul
-if errorlevel 1 (
-  echo [ERROR] Uvicorn does not match this app module. Auto-stop is skipped.
-  exit /b 1
-)
-
-echo [INFO] Stopping existing project uvicorn...
-taskkill /PID %PORT_PID% /T /F >nul 2>&1
-timeout /t 1 /nobreak >nul
-
-:START_SERVER
 chcp 65001 > nul
 echo Starting dashboard...
-echo Open http://localhost:%PORT% in your browser
+echo Open http://localhost:%RUN_PORT% in your browser
 echo Press Ctrl+C to stop
+if defined RELOAD_FLAG (
+  echo Reload mode: ON
+) else (
+  echo Reload mode: OFF
+)
 echo.
-uv run uvicorn %APP% --host %HOST% --port %PORT% --reload
+
+uv run uvicorn %APP% --host %HOST% --port %RUN_PORT% %RELOAD_FLAG%

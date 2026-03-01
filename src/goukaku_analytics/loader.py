@@ -1,7 +1,13 @@
 from pathlib import Path
+import logging
 import pandas as pd
 from openpyxl import load_workbook
-from datetime import datetime
+from datetime import datetime, timedelta
+
+logger = logging.getLogger("goukaku_analytics")
+
+# ファイルパス+更新時刻ベースのキャッシュ（同一ファイルの繰り返し読み込み防止）
+_cache: dict[str, tuple[float, pd.DataFrame]] = {}
 
 # 分類コードのマッピング
 CATEGORY_LABELS = {
@@ -43,42 +49,43 @@ COL_MAP = {
     26: "方式補足",
     27: "発表日",
     28: "備考",
+    # 第2志望（実Excelに「分類2補足」列は存在しない）
     29: "分類2",
-    30: "分類2補足",
-    31: "大学名2",
-    32: "学部名2",
-    33: "学科名2",
-    34: "備考2",
-    35: "分類3",
-    36: "分類3補足",
-    37: "大学名3",
-    38: "学部名3",
-    39: "学科名3",
-    40: "備考3",
-    41: "合計得点",
-    42: "得点率",
-    43: "満点",
-    44: "文理区分",
-    45: "英R",
-    46: "英L",
-    47: "数学1",
-    48: "数学2",
-    49: "国語",
-    50: "物理",
-    51: "化学",
-    52: "生物",
-    53: "地学",
-    54: "物理基礎",
-    55: "化学基礎",
-    56: "生物基礎",
-    57: "地学基礎",
-    58: "世界史",
-    59: "日本史",
-    60: "地理",
-    61: "倫理",
-    62: "政経",
-    63: "地歴公共",
-    64: "情報",
+    30: "大学名2",
+    31: "学部名2",
+    32: "学科名2",
+    33: "備考2",
+    # 第3志望（実Excelに「分類3補足」列は存在しない）
+    34: "分類3",
+    35: "大学名3",
+    36: "学部名3",
+    37: "学科名3",
+    38: "備考3",
+    # 共通テスト得点
+    39: "合計得点",
+    40: "得点率",
+    41: "満点",
+    42: "文理区分",
+    43: "英R",
+    44: "英L",
+    45: "数学1",
+    46: "数学2",
+    47: "国語",
+    48: "物理",
+    49: "化学",
+    50: "生物",
+    51: "地学",
+    52: "物理基礎",
+    53: "化学基礎",
+    54: "生物基礎",
+    55: "地学基礎",
+    56: "世界史",
+    57: "日本史",
+    58: "地理",
+    59: "倫理",
+    60: "政経",
+    61: "地歴公共",
+    62: "情報",
 }
 
 SUBJECT_COLUMNS = [
@@ -98,7 +105,12 @@ def _find_header_row_idx(ws) -> int:
 
 
 def load_data(path: Path) -> pd.DataFrame:
-    """Excelからメインデータシートを読み込みDataFrameとして返す"""
+    """Excelからメインデータシートを読み込みDataFrameとして返す（mtime ベースキャッシュ付き）"""
+    key = str(path.resolve())
+    mtime = path.stat().st_mtime
+    if key in _cache and _cache[key][0] == mtime:
+        return _cache[key][1].copy()
+
     wb = load_workbook(path, data_only=True)
     ws = wb.worksheets[0]
 
@@ -139,6 +151,10 @@ def load_data(path: Path) -> pd.DataFrame:
     df["文理区分"] = pd.to_numeric(df["文理区分"], errors="coerce")
     df["文理"] = df["文理区分"].map({1: "文系", 2: "理系"}).fillna("不明")
 
+    # 志望順位・進学先決定を数値化
+    df["志望順位"] = pd.to_numeric(df["志望順位"], errors="coerce")
+    df["進学先決定"] = pd.to_numeric(df["進学先決定"], errors="coerce")
+
     # 共通テスト得点
     df["合計得点"] = pd.to_numeric(df["合計得点"], errors="coerce")
     df["得点率"] = pd.to_numeric(df["得点率"], errors="coerce")
@@ -148,13 +164,15 @@ def load_data(path: Path) -> pd.DataFrame:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
 
-    return df
+    _cache[key] = (mtime, df)
+    return df.copy()
+
+
+_EXCEL_EPOCH = datetime(1899, 12, 30)
 
 
 def get_update_date(df: pd.DataFrame) -> str:
     """データの更新日列（COL_MAP 14列目）の最新値を返す"""
-    from datetime import timedelta
-    EXCEL_EPOCH = datetime(1899, 12, 30)
     try:
         col = df["更新日"].dropna()
         if len(col) == 0:
@@ -163,8 +181,7 @@ def get_update_date(df: pd.DataFrame) -> str:
         if isinstance(latest, datetime):
             return latest.strftime("%Y-%m-%d")
         if isinstance(latest, (int, float)):
-            # Excel シリアル値 → 日付変換（1899-12-30 起点）
-            return (EXCEL_EPOCH + timedelta(days=int(latest))).strftime("%Y-%m-%d")
+            return (_EXCEL_EPOCH + timedelta(days=int(latest))).strftime("%Y-%m-%d")
         return str(latest)
     except Exception:
         return "不明"
@@ -177,5 +194,5 @@ def load_all_years(year_paths: dict[int, Path]) -> dict[int, pd.DataFrame]:
         try:
             result[year] = load_data(path)
         except Exception as e:
-            print(f"Warning: {year}年度データの読み込みに失敗 ({e})")
+            logger.warning("%s年度データの読み込みに失敗: %s", year, e)
     return result
