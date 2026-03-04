@@ -1,8 +1,8 @@
 <!-- フィルタバー（各ページに include して使用） -->
-<form method="get" class="mb-5 p-3 bg-white border border-gray-200 rounded-lg flex flex-wrap items-end gap-3">
+<form method="get" class="mb-5 p-3 rounded-lg flex flex-wrap items-end gap-3" style="background: var(--p-surface); border: 0.5px solid var(--p-border-light);">
   <div>
-    <label class="block text-xs font-medium text-gray-500 mb-1">教室</label>
-    <select name="classroom" class="text-xs border border-gray-300 rounded-md px-2 py-1.5 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+    <label class="block text-xs font-medium mb-1" style="color: var(--p-text-secondary);">教室</label>
+    <select name="classroom" class="text-xs rounded-md px-2 py-1.5" style="border: 1px solid var(--p-border); background: var(--p-surface); color: var(--p-text);">
       <option value="">すべて</option>
       {% for c in filter_options.classrooms %}
       <option value="{{ c }}" {% if filters.classroom == c %}selected{% endif %}>{{ c }}</option>
@@ -10,8 +10,8 @@
     </select>
   </div>
   <div>
-    <label class="block text-xs font-medium text-gray-500 mb-1">学校</label>
-    <select name="school" class="text-xs border border-gray-300 rounded-md px-2 py-1.5 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+    <label class="block text-xs font-medium mb-1" style="color: var(--p-text-secondary);">学校</label>
+    <select name="school" class="text-xs rounded-md px-2 py-1.5" style="border: 1px solid var(--p-border); background: var(--p-surface); color: var(--p-text);">
       <option value="">すべて</option>
       {% for s in filter_options.schools %}
       <option value="{{ s }}" {% if filters.school == s %}selected{% endif %}>{{ s }}</option>
@@ -19,8 +19,8 @@
     </select>
   </div>
   <div>
-    <label class="block text-xs font-medium text-gray-500 mb-1">文理</label>
-    <select name="bunri" class="text-xs border border-gray-300 rounded-md px-2 py-1.5 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+    <label class="block text-xs font-medium mb-1" style="color: var(--p-text-secondary);">文理</label>
+    <select name="bunri" class="text-xs rounded-md px-2 py-1.5" style="border: 1px solid var(--p-border); background: var(--p-surface); color: var(--p-text);">
       <option value="">すべて</option>
       {% for b in filter_options.bunri %}
       <option value="{{ b }}" {% if filters.bunri == b %}selected{% endif %}>{{ b }}</option>
@@ -28,8 +28,8 @@
     </select>
   </div>
   <div>
-    <label class="block text-xs font-medium text-gray-500 mb-1">国公私</label>
-    <select name="kokushi" class="text-xs border border-gray-300 rounded-md px-2 py-1.5 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+    <label class="block text-xs font-medium mb-1" style="color: var(--p-text-secondary);">国公私</label>
+    <select name="kokushi" class="text-xs rounded-md px-2 py-1.5" style="border: 1px solid var(--p-border); background: var(--p-surface); color: var(--p-text);">
       <option value="">すべて</option>
       {% for k in filter_options.kokushi %}
       <option value="{{ k }}" {% if filters.kokushi == k %}selected{% endif %}>{{ k }}</option>
@@ -37,7 +37,7 @@
     </select>
   </div>
   <div class="flex gap-2">
-    <button type="submit" class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">絞り込み</button>
-    <a href="{{ request.url.path }}" class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">リセット</a>
+    <button type="submit" class="portal-btn-primary" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">絞り込み</button>
+    <a href="{{ request.url.path }}" class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors" style="color: var(--p-text-secondary); background: var(--p-bg-secondary);">リセット</a>
   </div>
 </form>

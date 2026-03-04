@@ -10,7 +10,7 @@
   <tbody>
     {% for row in ranking %}
     <tr>
-      <td class="text-gray-400 text-sm">{{ loop.index }}</td>
+      <td class="text-sm" style="color: var(--p-text-tertiary);">{{ loop.index }}</td>
       <td class="font-medium">{{ row.大学名 }}</td>
       <td>
         {% if row.分類 in ["国立", "公立", "大学校"] %}
@@ -19,7 +19,7 @@
           <span class="badge-shiritsu">{{ row.分類 }}</span>
         {% endif %}
       </td>
-      <td class="text-right font-bold text-blue-700">{{ row.合格者数 }}</td>
+      <td class="text-right font-bold" style="color: var(--p-accent);">{{ row.合格者数 }}</td>
     </tr>
     {% endfor %}
   </tbody>

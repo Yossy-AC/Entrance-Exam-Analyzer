@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
@@ -24,6 +25,24 @@ logger = logging.getLogger("goukaku_analytics")
 
 app = FastAPI(title="合格実績分析ダッシュボード")
 
+
+# ─── ポータル統合 ─────────────────────────────────────────
+
+
+@app.middleware("http")
+async def portal_auth(request: Request, call_next):
+    """BEHIND_PORTAL=true 時、X-Portal-Role ヘッダーがあれば認証スキップ"""
+    if os.environ.get("BEHIND_PORTAL") == "true" and request.headers.get("X-Portal-Role"):
+        return await call_next(request)
+    return await call_next(request)
+
+
+def _base_href(request: Request) -> str:
+    """ポータル経由の場合は X-Portal-Prefix からベースパスを返す。スタンドアロンは /"""
+    prefix = request.headers.get("X-Portal-Prefix", "")
+    return f"{prefix}/" if prefix else "/"
+
+
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
@@ -39,7 +58,8 @@ def _error_response(request: Request, message: str, status_code: int = 500):
     return templates.TemplateResponse(
         "dashboard.html",
         {"request": request, "no_data": True,
-         "upload_error": message, "active": "dashboard"},
+         "upload_error": message, "active": "dashboard",
+         "base_href": _base_href(request)},
         status_code=status_code,
     )
 
@@ -104,7 +124,7 @@ templates.env.globals["current_filename"] = _current_filename
 
 
 @app.post("/upload/clear")
-async def clear_upload():
+async def clear_upload(request: Request):
     _current_upload["path"] = None
     _current_upload["filename"] = None
 
@@ -115,7 +135,7 @@ async def clear_upload():
         except Exception:
             pass
 
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse(_base_href(request), status_code=303)
 
 
 @app.post("/upload")
@@ -174,11 +194,13 @@ def _parse_filters(request: Request) -> dict:
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
+    base_href = _base_href(request)
     path, year = _get_current_excel()
     if path is None:
         return templates.TemplateResponse(
             "dashboard.html",
-            {"request": request, "no_data": True, "active": "dashboard"},
+            {"request": request, "no_data": True, "active": "dashboard",
+             "base_href": base_href},
         )
     try:
         df_full = load_data(path)
@@ -196,6 +218,7 @@ async def dashboard(request: Request):
                 "filter_options": get_filter_options(df_full),
                 "filters": filters,
                 "active": "dashboard",
+                "base_href": base_href,
             },
         )
     except Exception as e:
@@ -205,9 +228,10 @@ async def dashboard(request: Request):
 
 @app.get("/summary", response_class=HTMLResponse)
 async def summary_page(request: Request):
+    base_href = _base_href(request)
     path, year = _get_current_excel()
     if path is None:
-        return RedirectResponse("/", status_code=302)
+        return RedirectResponse(base_href, status_code=302)
     try:
         df_full = load_data(path)
         filters = _parse_filters(request)
@@ -223,6 +247,7 @@ async def summary_page(request: Request):
                 "filter_options": get_filter_options(df_full),
                 "filters": filters,
                 "active": "summary",
+                "base_href": base_href,
             },
         )
     except Exception as e:
@@ -232,9 +257,10 @@ async def summary_page(request: Request):
 
 @app.get("/scores", response_class=HTMLResponse)
 async def scores_page(request: Request):
+    base_href = _base_href(request)
     path, year = _get_current_excel()
     if path is None:
-        return RedirectResponse("/", status_code=302)
+        return RedirectResponse(base_href, status_code=302)
     try:
         df_full = load_data(path)
         filters = _parse_filters(request)
@@ -250,6 +276,7 @@ async def scores_page(request: Request):
                 "filter_options": get_filter_options(df_full),
                 "filters": filters,
                 "active": "scores",
+                "base_href": base_href,
             },
         )
     except Exception as e:
@@ -259,9 +286,10 @@ async def scores_page(request: Request):
 
 @app.get("/classroom", response_class=HTMLResponse)
 async def classroom_page(request: Request):
+    base_href = _base_href(request)
     path, year = _get_current_excel()
     if path is None:
-        return RedirectResponse("/", status_code=302)
+        return RedirectResponse(base_href, status_code=302)
     try:
         df_full = load_data(path)
         filters = _parse_filters(request)
@@ -275,6 +303,7 @@ async def classroom_page(request: Request):
                 "filter_options": get_filter_options(df_full),
                 "filters": filters,
                 "active": "classroom",
+                "base_href": base_href,
             },
         )
     except Exception as e:
@@ -284,9 +313,10 @@ async def classroom_page(request: Request):
 
 @app.get("/preference", response_class=HTMLResponse)
 async def preference_page(request: Request):
+    base_href = _base_href(request)
     path, year = _get_current_excel()
     if path is None:
-        return RedirectResponse("/", status_code=302)
+        return RedirectResponse(base_href, status_code=302)
     try:
         df_full = load_data(path)
         filters = _parse_filters(request)
@@ -300,6 +330,7 @@ async def preference_page(request: Request):
                 "filter_options": get_filter_options(df_full),
                 "filters": filters,
                 "active": "preference",
+                "base_href": base_href,
             },
         )
     except Exception as e:
@@ -309,9 +340,10 @@ async def preference_page(request: Request):
 
 @app.get("/trends", response_class=HTMLResponse)
 async def trends_page(request: Request):
+    base_href = _base_href(request)
     year_paths = settings.get_year_paths()
     if not year_paths:
-        return RedirectResponse("/", status_code=302)
+        return RedirectResponse(base_href, status_code=302)
     try:
         year_dfs = load_all_years(year_paths)
         trend = get_trend_data(year_dfs)
@@ -322,6 +354,7 @@ async def trends_page(request: Request):
                 "trend": trend,
                 "trend_json": json.dumps(trend["chart"], ensure_ascii=False, default=json_default),
                 "active": "trends",
+                "base_href": base_href,
             },
         )
     except Exception as e:

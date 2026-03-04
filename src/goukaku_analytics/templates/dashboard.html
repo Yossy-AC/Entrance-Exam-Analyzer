@@ -6,17 +6,17 @@
 {% if no_data %}
 <div class="flex flex-col items-center justify-center h-64 text-center">
   {% if upload_error is defined and upload_error %}
-  <svg class="w-16 h-16 text-red-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+  <svg class="w-16 h-16 mb-4" style="color: var(--p-danger);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
   </svg>
-  <p class="text-red-600 text-sm font-medium mb-1">{{ upload_error }}</p>
-  <p class="text-gray-400 text-xs">左サイドバーから正しいExcelファイルをアップロードしてください</p>
+  <p class="text-sm font-medium mb-1" style="color: var(--p-danger);">{{ upload_error }}</p>
+  <p class="text-xs" style="color: var(--p-text-tertiary);">左サイドバーから正しいExcelファイルをアップロードしてください</p>
   {% else %}
-  <svg class="w-16 h-16 text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+  <svg class="w-16 h-16 mb-4" style="color: var(--p-border);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
     <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
   </svg>
-  <p class="text-gray-500 text-sm font-medium mb-1">データファイルが読み込まれていません</p>
-  <p class="text-gray-400 text-xs">左サイドバーからExcelファイルをアップロードしてください</p>
+  <p class="text-sm font-medium mb-1" style="color: var(--p-text-secondary);">データファイルが読み込まれていません</p>
+  <p class="text-xs" style="color: var(--p-text-tertiary);">左サイドバーからExcelファイルをアップロードしてください</p>
   {% endif %}
 </div>
 {% else %}
@@ -27,27 +27,27 @@
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
 
   <div class="stat-card">
-    <p class="text-xs font-medium text-gray-500 mb-3">在籍生徒数</p>
-    <p class="text-3xl font-bold text-gray-900 leading-none">{{ summary.total_students }}</p>
-    <p class="text-xs text-gray-400 mt-2">人</p>
+    <p class="text-xs font-medium mb-3" style="color: var(--p-text-secondary);">在籍生徒数</p>
+    <p class="text-3xl font-bold leading-none" style="color: var(--p-text);">{{ summary.total_students }}</p>
+    <p class="text-xs mt-2" style="color: var(--p-text-tertiary);">人</p>
   </div>
 
   <div class="stat-card">
-    <p class="text-xs font-medium text-gray-500 mb-3">総受験数</p>
-    <p class="text-3xl font-bold text-indigo-600 leading-none">{{ exam_result.total }}</p>
-    <p class="text-xs text-gray-400 mt-2">出願・合格・不合格</p>
+    <p class="text-xs font-medium mb-3" style="color: var(--p-text-secondary);">総受験数</p>
+    <p class="text-3xl font-bold leading-none" style="color: var(--p-accent);">{{ exam_result.total }}</p>
+    <p class="text-xs mt-2" style="color: var(--p-text-tertiary);">出願・合格・不合格</p>
   </div>
 
   <div class="stat-card">
-    <p class="text-xs font-medium text-gray-500 mb-3">合格率</p>
-    <p class="text-3xl font-bold text-blue-600 leading-none">{{ summary.pass_rate }}<span class="text-lg font-semibold">%</span></p>
-    <p class="text-xs text-gray-400 mt-2">合格件数 / 総受験数</p>
+    <p class="text-xs font-medium mb-3" style="color: var(--p-text-secondary);">合格率</p>
+    <p class="text-3xl font-bold leading-none" style="color: var(--p-accent);">{{ summary.pass_rate }}<span class="text-lg font-semibold">%</span></p>
+    <p class="text-xs mt-2" style="color: var(--p-text-tertiary);">合格件数 / 総受験数</p>
   </div>
 
   <div class="stat-card">
-    <p class="text-xs font-medium text-gray-500 mb-3">データ更新日</p>
-    <p class="text-2xl font-bold text-gray-800 leading-none">{{ update_date }}</p>
-    <p class="text-xs text-gray-400 mt-2">最終入力日</p>
+    <p class="text-xs font-medium mb-3" style="color: var(--p-text-secondary);">データ更新日</p>
+    <p class="text-2xl font-bold leading-none" style="color: var(--p-text);">{{ update_date }}</p>
+    <p class="text-xs mt-2" style="color: var(--p-text-tertiary);">最終入力日</p>
   </div>
 
 </div>
@@ -56,12 +56,12 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
 
   <div class="card">
-    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">国公立大 受験方式別</p>
+    <p class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: var(--p-text-secondary);">国公立大 受験方式別</p>
     <canvas id="methodKokuChart" height="210"></canvas>
   </div>
 
   <div class="card">
-    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">私立大 受験方式別</p>
+    <p class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: var(--p-text-secondary);">私立大 受験方式別</p>
     <canvas id="methodShiChart" height="210"></canvas>
   </div>
 
@@ -72,7 +72,7 @@
 
   <!-- Category table -->
   <div class="card">
-    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">分類別 集計一覧</p>
+    <p class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: var(--p-text-secondary);">分類別 集計一覧</p>
     <table class="table-base">
       <thead>
         <tr>
@@ -84,7 +84,7 @@
         {% for row in summary.by_category %}
         <tr>
           <td class="font-medium">{{ row.分類 }}</td>
-          <td class="text-right font-bold text-gray-900">{{ row.合格者数 }} / {% if row.受験数 %}{{ row.受験数 }}{% else %}?{% endif %}</td>
+          <td class="text-right font-bold" style="color: var(--p-text);">{{ row.合格者数 }} / {% if row.受験数 %}{{ row.受験数 }}{% else %}?{% endif %}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -93,23 +93,23 @@
 
   <!-- Exam result table -->
   <div class="card">
-    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">受験結果</p>
-    <div class="space-y-3">
-      <div class="flex items-center justify-between px-3 py-2.5 bg-blue-50 rounded-md border border-blue-100">
-        <span class="text-xs font-medium text-blue-700">出願</span>
-        <span class="text-lg font-bold text-blue-900">{{ exam_result.applied }}</span>
+    <p class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: var(--p-text-secondary);">受験結果</p>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+      <div class="flex items-center justify-between px-3 py-2.5 rounded-md" style="background: rgba(0,113,227,0.06); border: 1px solid rgba(0,113,227,0.12);">
+        <span class="text-xs font-medium" style="color: var(--p-accent);">出願</span>
+        <span class="text-lg font-bold" style="color: var(--p-text);">{{ exam_result.applied }}</span>
       </div>
-      <div class="flex items-center justify-between px-3 py-2.5 bg-emerald-50 rounded-md border border-emerald-100">
-        <span class="text-xs font-medium text-emerald-700">合格</span>
-        <span class="text-lg font-bold text-emerald-900">{{ exam_result.passed }}</span>
+      <div class="flex items-center justify-between px-3 py-2.5 rounded-md" style="background: rgba(52,199,89,0.08); border: 1px solid rgba(52,199,89,0.2);">
+        <span class="text-xs font-medium" style="color: var(--p-success);">合格</span>
+        <span class="text-lg font-bold" style="color: var(--p-text);">{{ exam_result.passed }}</span>
       </div>
-      <div class="flex items-center justify-between px-3 py-2.5 bg-red-50 rounded-md border border-red-100">
-        <span class="text-xs font-medium text-red-700">不合格</span>
-        <span class="text-lg font-bold text-red-900">{{ exam_result.failed }}</span>
+      <div class="flex items-center justify-between px-3 py-2.5 rounded-md" style="background: rgba(255,59,48,0.06); border: 1px solid rgba(255,59,48,0.15);">
+        <span class="text-xs font-medium" style="color: var(--p-danger);">不合格</span>
+        <span class="text-lg font-bold" style="color: var(--p-text);">{{ exam_result.failed }}</span>
       </div>
-      <div class="flex items-center justify-between px-3 py-2.5 bg-gray-100 rounded-md border border-gray-200">
-        <span class="text-xs font-medium text-gray-700">合計</span>
-        <span class="text-lg font-bold text-gray-900">{{ exam_result.total }}</span>
+      <div class="flex items-center justify-between px-3 py-2.5 rounded-md" style="background: var(--p-bg-secondary); border: 1px solid var(--p-border-light);">
+        <span class="text-xs font-medium" style="color: var(--p-text-secondary);">合計</span>
+        <span class="text-lg font-bold" style="color: var(--p-text);">{{ exam_result.total }}</span>
       </div>
     </div>
   </div>
