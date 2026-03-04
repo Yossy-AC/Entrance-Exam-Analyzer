@@ -151,12 +151,22 @@ async def upload_excel(file: UploadFile = File(...)):
     _UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     dest = _UPLOAD_DIR / safe_name
 
+    MAX_UPLOAD_SIZE = 20 * 1024 * 1024  # 20MB
     try:
+        total_size = 0
         with dest.open("wb") as out:
             while True:
                 chunk = await file.read(1024 * 1024)
                 if not chunk:
                     break
+                total_size += len(chunk)
+                if total_size > MAX_UPLOAD_SIZE:
+                    out.close()
+                    dest.unlink(missing_ok=True)
+                    return JSONResponse(
+                        {"ok": False, "error": "ファイルサイズが上限（20MB）を超えています"},
+                        status_code=413,
+                    )
                 out.write(chunk)
 
         if not dest.exists() or dest.stat().st_size == 0:
