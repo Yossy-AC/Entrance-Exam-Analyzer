@@ -234,3 +234,6 @@ EXCEL_2026=F:\path\to\results_2026.xlsx
 `pyproject.toml` に全て記載。`uv sync` で再現可能。
 主要ライブラリ: `fastapi`, `uvicorn[standard]`, `pandas`, `openpyxl`,
 `jinja2`, `pydantic-settings`, `python-multipart`
+
+## 最近の変更（2026年3月）
+- base.html: テーブルホバー色をニュートラルカラーに修正（バッジ色との競合解消）
