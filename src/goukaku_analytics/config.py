@@ -7,7 +7,11 @@ _PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=str(_PROJECT_ROOT.parent / ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     excel_2026: str = ""
     excel_2025: str = ""

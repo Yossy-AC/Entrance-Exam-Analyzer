@@ -200,15 +200,14 @@ EXCEL_2026=...
 EXCEL_2025=...  # 追加するだけで /trends に反映される
 ```
 
-## .env 設定例
+## .env 設定
+
+中央管理: `Yossy/.env` に統合。`config.py` が `_PROJECT_ROOT.parent / ".env"` を参照。
 
 ```
-EXCEL_2026=F:\path\to\results_2026.xlsx
-# EXCEL_2025=F:\path\to\results_2025.xlsx
+EXCEL_2026=F:path	oesults_2026.xlsx
+# EXCEL_2025=F:path	oesults_2025.xlsx
 ```
-
-`.env` は `.gitignore` に含まれているためコミットされない。
-
 > **注意**: `.env` のパスに日本語を含む場合、Python の `Path.exists()` が正しく機能せずファイルが見つからない扱いになる。
 > Excelファイル名・パスは **ASCII のみ** を使うこと。
 
