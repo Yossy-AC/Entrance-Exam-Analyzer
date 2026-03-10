@@ -193,22 +193,21 @@ URLクエリパラメータ方式（ページリロード）。
 
 ### 経年比較の設定
 
-`.env` に複数年度のパスを設定することで経年比較が有効になる。
+`data/` ディレクトリに複数年度のExcelを配置するだけで経年比較が有効になる。
+`.env` の `EXCEL_YYYY` による指定も後方互換で対応。
 
-```
-EXCEL_2026=...
-EXCEL_2025=...  # 追加するだけで /trends に反映される
-```
+## data/フォルダ
+- OneDriveへのシンボリックリンク（`Dev/setup.sh` で作成）
+- `data/*.xlsx` からファイル名の年度を自動検出（`config.py:get_year_paths()`）
+- セットアップ: `bash setup.sh <OneDriveのDO_NOT_CHANGE_NAMEパス>`（Dev/で1回実行）
 
 ## .env 設定
 
 中央管理: `Yossy/.env` に統合。`config.py` が `_PROJECT_ROOT.parent / ".env"` を参照。
+Excelパスは `data/` symlink経由で自動検出されるため、通常は設定不要。
 
-```
-EXCEL_2026=F:path	oesults_2026.xlsx
-# EXCEL_2025=F:path	oesults_2025.xlsx
-```
-> **注意**: `.env` のパスに日本語を含む場合、Python の `Path.exists()` が正しく機能せずファイルが見つからない扱いになる。
+> **注意**: Excelパスに日本語を含むとPathが正しく機能しないことがある。ASCII のみ推奨。
+
 > Excelファイル名・パスは **ASCII のみ** を使うこと。
 
 ## データ未設定時の挙動

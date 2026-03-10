@@ -37,6 +37,16 @@ class Settings(BaseSettings):
                 if year not in result:
                     result[year] = xlsx
 
+        # data/ ディレクトリからも自動検出（OneDrive symlink 経由）
+        _data_dir = _PROJECT_ROOT / "data"
+        if _data_dir.exists():
+            for xlsx in sorted(_data_dir.glob("*.xlsx")):
+                m = re.search(r"(\d{4})", xlsx.stem)
+                if m:
+                    year = int(m.group(1))
+                    if year not in result:
+                        result[year] = xlsx
+
         return result
 
 

@@ -11,3 +11,6 @@ wheels/
 
 # Environment variables (contains local file paths)
 .env
+
+# Data directory (OneDrive symlink)
+data/
