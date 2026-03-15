@@ -13,10 +13,14 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "uvicorn[standard]>=0.41.0",
     "python-multipart>=0.0.22",
+    "yossy-portal-lib",
 ]
 
 [tool.uv]
 package = false
+
+[tool.uv.sources]
+yossy-portal-lib = { path = "../yossy-portal/lib" }
 
 [dependency-groups]
 dev = [

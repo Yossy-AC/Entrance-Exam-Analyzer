@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
@@ -8,6 +7,8 @@ import json
 import logging
 import re
 import tempfile
+
+from yossy_portal_lib import portal_auth_middleware, base_href as _base_href, add_health_endpoint
 
 from .config import settings
 from .loader import load_data, get_update_date, load_all_years
@@ -28,20 +29,8 @@ app = FastAPI(title="合格実績分析ダッシュボード")
 
 # ─── ポータル統合 ─────────────────────────────────────────
 
-
-@app.middleware("http")
-async def portal_auth(request: Request, call_next):
-    """BEHIND_PORTAL=true 時、X-Portal-Role ヘッダーがあれば認証スキップ"""
-    if os.environ.get("BEHIND_PORTAL") == "true" and request.headers.get("X-Portal-Role"):
-        return await call_next(request)
-    return await call_next(request)
-
-
-def _base_href(request: Request) -> str:
-    """ポータル経由の場合は X-Portal-Prefix からベースパスを返す。スタンドアロンは /"""
-    prefix = request.headers.get("X-Portal-Prefix", "")
-    return f"{prefix}/" if prefix else "/"
-
+app.middleware("http")(portal_auth_middleware)
+add_health_endpoint(app)
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
