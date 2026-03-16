@@ -235,3 +235,4 @@ Excelパスは `data/` symlink経由で自動検出されるため、通常は�
 - base.html: テーブルホバー色をニュートラルカラーに修正（バッジ色との競合解消）
 - main.py: 認証ミドルウェア・base_href・ヘルスチェックを `yossy-portal-lib` 共有ライブラリに移行
 - base.html: 179行のインラインCSS → `static/style.css` に外部化、`main.py` に StaticFiles マウント追加
+- main.py + テンプレート: CSP nonceミドルウェア（`csp_middleware`）追加、全`<script>`タグに`nonce`属性付与
