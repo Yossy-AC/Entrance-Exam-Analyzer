@@ -68,7 +68,7 @@ Caddy :8080
 | セマンティック | `var(--p-success)`, `var(--p-danger)`, `var(--p-warning)` |
 | 角丸 | `var(--p-radius)`, `var(--p-radius-sm)` |
 
-Tailwind CDN は除去済み。レイアウト系ユーティリティ（`flex`, `grid`, `text-xs` 等）は `base.html` の `<style>` ブロックにTailwind互換のCSS定義として残してある。
+Tailwind CDN は除去済み。レイアウト系ユーティリティ（`flex`, `grid`, `text-xs` 等）やコンポーネント定義は `static/style.css` に外部化済み。`main.py` で `StaticFiles` マウント。
 
 ### ポータルナビバー
 
@@ -234,3 +234,4 @@ Excelパスは `data/` symlink経由で自動検出されるため、通常は�
 ## 最近の変更（2026年3月）
 - base.html: テーブルホバー色をニュートラルカラーに修正（バッジ色との競合解消）
 - main.py: 認証ミドルウェア・base_href・ヘルスチェックを `yossy-portal-lib` 共有ライブラリに移行
+- base.html: 179行のインラインCSS → `static/style.css` に外部化、`main.py` に StaticFiles マウント追加

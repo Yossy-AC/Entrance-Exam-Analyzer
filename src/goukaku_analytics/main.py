@@ -1,6 +1,7 @@
 from pathlib import Path
 from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import json
@@ -25,6 +26,9 @@ from .analysis.preference import get_preference_summary
 logger = logging.getLogger("goukaku_analytics")
 
 app = FastAPI(title="合格実績分析ダッシュボード")
+
+STATIC_DIR = Path(__file__).parent.parent.parent / "static"
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 # ─── ポータル統合 ─────────────────────────────────────────
