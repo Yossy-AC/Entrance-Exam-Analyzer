@@ -116,7 +116,7 @@
 
 </div>
 
-<script>
+<script nonce="{{ request.state.csp_nonce }}">
 const methodByKokushi = {{ method_by_kokushi | tojson | safe }};
 const PALETTE = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6'];
 const PALETTE_A = PALETTE.map(c => c + 'bf');

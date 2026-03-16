@@ -57,7 +57,7 @@ EXCEL_2025=F:\OneDrive\AI\合格実績_2025.xlsx</pre>
   </table>
 </div>
 
-<script>
+<script nonce="{{ request.state.csp_nonce }}">
 const chartData = {{ trend_json | safe }};
 new Chart(document.getElementById('trendChart'), {
   type: 'line',

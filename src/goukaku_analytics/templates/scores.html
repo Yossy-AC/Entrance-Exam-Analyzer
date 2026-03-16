@@ -91,7 +91,7 @@
   </table>
 </div>
 
-<script>
+<script nonce="{{ request.state.csp_nonce }}">
 const scoresData = {{ scores_json | safe }};
 
 const subjects = scoresData.subject_avgs || [];

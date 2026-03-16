@@ -97,7 +97,7 @@
 </div>
 {% endif %}
 
-<script>
+<script nonce="{{ request.state.csp_nonce }}">
 const chartData = {{ pref.chart | tojson | safe }};
 new Chart(document.getElementById('prefChart'), {
   type: 'doughnut',

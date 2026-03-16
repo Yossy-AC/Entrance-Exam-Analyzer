@@ -59,7 +59,7 @@
   </table>
 </div>
 
-<script>
+<script nonce="{{ request.state.csp_nonce }}">
 const chartData = {{ classroom.chart | tojson | safe }};
 new Chart(document.getElementById('classroomChart'), {
   type: 'bar',

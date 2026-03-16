@@ -6,13 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}合格実績分析{% endblock %}</title>
   <base href="{{ base_href }}">
-  <script>
+  <script nonce="{{ request.state.csp_nonce }}">
   (function(){var t=localStorage.getItem("portal-theme");if(!t)t=window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t)})();
   </script>
   <link rel="stylesheet" href="/portal-assets/portal.css">
   <link rel="stylesheet" href="static/style.css">
-  <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script nonce="{{ request.state.csp_nonce }}" src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+  <script nonce="{{ request.state.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Hiragino Sans', sans-serif; background: var(--p-bg); color: var(--p-text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; margin: 0;">
 
@@ -177,8 +177,8 @@
   </div>
   </div>
 
-  <script src="/portal-assets/portal-nav.js"></script>
-  <script>
+  <script nonce="{{ request.state.csp_nonce }}" src="/portal-assets/portal-nav.js"></script>
+  <script nonce="{{ request.state.csp_nonce }}">
   (function () {
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');

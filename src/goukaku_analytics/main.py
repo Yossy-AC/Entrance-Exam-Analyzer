@@ -9,7 +9,7 @@ import logging
 import re
 import tempfile
 
-from yossy_portal_lib import portal_auth_middleware, base_href as _base_href, add_health_endpoint
+from yossy_portal_lib import portal_auth_middleware, csp_middleware, base_href as _base_href, add_health_endpoint
 
 from .config import settings
 from .loader import load_data, get_update_date, load_all_years
@@ -34,6 +34,7 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 # ─── ポータル統合 ─────────────────────────────────────────
 
 app.middleware("http")(portal_auth_middleware)
+app.middleware("http")(csp_middleware)
 add_health_endpoint(app)
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
