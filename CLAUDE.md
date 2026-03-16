@@ -68,15 +68,13 @@ Caddy :8080
 | セマンティック | `var(--p-success)`, `var(--p-danger)`, `var(--p-warning)` |
 | 角丸 | `var(--p-radius)`, `var(--p-radius-sm)` |
 
-Tailwindの色クラス（`text-gray-500`, `bg-white` 等）は使わない。レイアウト系クラス（`flex`, `grid`, `text-xs` 等）は使ってOK。
+Tailwind CDN は除去済み。レイアウト系ユーティリティ（`flex`, `grid`, `text-xs` 等）は `base.html` の `<style>` ブロックにTailwind互換のCSS定義として残してある。
 
 ### ポータルナビバー
 
-`base.html` に固定のポータルナビを配置。リンクは絶対パス：
+`base.html` に統一ナビ（portal-nav）を配置。サービス間直接リンクは廃止し、全ナビゲーションはポータルトップ（`/`）を経由する。
 - `/` — ポータルホーム
-- `/staff/admin` — 成績管理
-- `/staff/exam/` — 国公立大出題分析
-- `/auth/logout` — ログアウト
+- `/auth/logout` — ログアウト（POST送信）
 
 ### サイドバーのリンク
 
