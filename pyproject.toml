@@ -20,7 +20,7 @@ dependencies = [
 package = false
 
 [tool.uv.sources]
-yossy-portal-lib = { path = "../yossy-portal/lib" }
+yossy-portal-lib = { path = "../yossy-portal/lib", editable = true }
 
 [dependency-groups]
 dev = [
